@@ -1,0 +1,32 @@
+.footer {
+    margin-top: 57px;
+    border-top: 1px solid #D4D4D4;
+    padding: 27px 0;
+}
+
+.content {
+    width: 100%;
+    max-width: 1571px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+.title, .aboutProject {
+    font-size: 14px;
+    font-weight: $fw-medium;
+    color: #808080;
+}
+
+.socialGroup {
+    display: flex;
+    align-items: center;
+}
+
+.aboutProject {
+    margin-right: 35px;
+}
+
+.vk {
+    margin-right: 16px;
+}

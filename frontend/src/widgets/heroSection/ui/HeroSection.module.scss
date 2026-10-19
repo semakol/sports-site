@@ -1,0 +1,42 @@
+.heroSection {
+    display: flex;
+    justify-content: space-between;
+}
+
+.content {
+    flex: 1;
+    padding-top: 108px;
+    width: 100%;
+    max-width: 587px;
+}
+
+.text {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    margin-bottom: 21px;
+}
+
+.tag {
+    padding: 0;
+    @include text-regular-15;
+    color: $bright-grey-color;
+}
+
+.title {
+    margin: 0;
+    @include text-semibold-32;
+    color: #000;
+}
+
+.subtitle {
+    margin: 0;
+    @include text-regular-18;
+    color: $bright-grey-color;
+}
+
+.imageWrapper {
+    flex: 1;
+    width: 100%;
+    max-width: 885px;
+}

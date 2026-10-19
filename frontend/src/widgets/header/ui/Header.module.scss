@@ -1,0 +1,47 @@
+.header {
+    max-width: 1571px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+
+    background-color: transparent;
+    position: absolute;
+    top: 23px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.leftSide {
+    display: flex;
+    align-items: center;
+    gap: 93px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.textLogo {
+    @include text-semibold-17;
+    color: $fc-primary
+}
+
+.navigation {
+    display: flex;
+    gap: 41px;
+}
+
+.navItem {
+    @include text-medium-17;
+    color: #000;
+    text-decoration: none;
+}
+
+.loginButton {
+    margin-right: 27px;
+}

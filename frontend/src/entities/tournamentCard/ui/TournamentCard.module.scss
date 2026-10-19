@@ -1,0 +1,94 @@
+.tournamentCard {
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    padding: 13px 16px;
+    position: relative;
+
+    background-size: cover;
+    background-position: center;
+    background-image: url('@shared/assets/images/footballField.jpg');
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #00000080;
+        opacity: 0.75;
+        box-shadow: 0px 0px 4px 0px #00000040;
+        border-radius: 10px;
+        z-index: 1;
+    }
+
+    > * {
+        position: relative;
+        z-index: 2;
+    }
+}
+
+.title {
+    font-size: 18px;
+    font-weight: $fw-medium;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.year {
+    font-size: 15px;
+    font-weight: $fw-regular;
+    color: #fff;
+    margin-bottom: 19px;
+}
+
+.statusWrapper {
+    width: fit-content;
+    padding: 5px 12px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+}
+
+.statusActive {
+    background-color: #5ADE57;
+}
+
+.statusRegistration {
+    background-color: #B1ABD8;
+}
+
+.statusSoon {
+    background-color: #DEC557;
+}
+
+.status {
+    font-size: 15px;
+    font-weight: $fw-regular;
+    color: #000;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+}
+
+.teamsGroup {
+    margin-right: 24px;
+}
+
+.teamsGroup, .formatGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.teamsCount, .format {
+    font-size: 14px;
+    font-weight: $fw-regular;
+    color: #fff;
+}
+
+.arrow {
+    margin-left: auto;
+}
