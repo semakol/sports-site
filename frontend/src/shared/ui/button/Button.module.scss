@@ -1,0 +1,27 @@
+.button {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 9px 20px;
+    border: none;
+
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+
+    &:hover {
+        opacity: 0.6;
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+.textContent {
+    margin: 0;
+    padding: 0;
+    @include text-medium-17;
+    color: $fc-primary;
+}
+
+.griddyWidth {
+    width: 100%;
+}

@@ -1,0 +1,14 @@
+.wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: $bg-color;
+}
+
+.container {
+    width: 100%;
+    max-width: 1571px;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+}

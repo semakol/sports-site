@@ -1,0 +1,31 @@
+@use './variables' as *;
+
+@mixin text-semibold-17 {
+    font-weight: $fw-semi-bold;
+    font-size: $fs-regular;
+    line-height: 1;
+}
+
+@mixin text-semibold-32 {
+    font-weight: $fw-semi-bold;
+    font-size: $fs-big;
+    line-height: 1;
+}
+
+@mixin text-medium-17 {
+    font-weight: $fw-medium;
+    font-size: $fs-regular;
+    line-height: 1;
+}
+
+@mixin text-regular-15 {
+    font-weight: $fw-regular;
+    font-size: $fs-regular-sm;
+    line-height: 1;
+}
+
+@mixin text-regular-18 {
+    font-weight: $fw-regular;
+    font-size: $fs-regular-lg;
+    line-height: 1;
+}

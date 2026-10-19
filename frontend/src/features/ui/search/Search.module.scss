@@ -1,0 +1,18 @@
+.search {
+    display: flex;
+    justify-content: space-between;
+    box-shadow: 0px 0px 5px 0px #00000040;
+    background-color: #FCFCFF;
+    border-radius: 15px;
+    padding: 14px 16px;
+}
+
+.searchInput {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-weight: $fw-regular;
+    font-size: 16px;
+    color: #8F8F8F;
+    background-color: #FCFCFF;
+}

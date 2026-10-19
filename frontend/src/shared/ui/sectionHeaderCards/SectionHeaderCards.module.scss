@@ -1,0 +1,29 @@
+.sectionHeaderCards {
+    margin-bottom: 21px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.titleGroup {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.title {
+    margin: 0;
+    font-weight: $fw-bold;
+    font-size: 19px;
+    color: $fc-primary;
+}
+
+.navItem {
+    text-decoration: none;
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    font-weight: $fw-regular;
+    font-size: $fs-regular-sm;
+    color: $link-color;
+}
