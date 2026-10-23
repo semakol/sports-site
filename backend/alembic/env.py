@@ -13,8 +13,10 @@ from app.db.base import Base
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+# URL можно передать снаружи (так делают тесты), иначе — из .env.
 # "%" экранируется, т.к. alembic.ini читается через configparser
-config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
+if not config.get_main_option("sqlalchemy.url"):
+    config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

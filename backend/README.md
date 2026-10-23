@@ -10,14 +10,21 @@
 backend/
 ├── app/
 │   ├── main.py          # создание FastAPI-приложения, CORS, подключение роутов
-│   ├── core/config.py   # настройки из .env
+│   ├── cli.py           # служебные команды (создать администратора)
+│   ├── core/
+│   │   ├── config.py    # настройки из .env
+│   │   ├── security.py  # хеширование паролей, JWT
+│   │   └── errors.py    # единый формат ошибок {code, message, field}
 │   ├── db/
 │   │   ├── base.py      # базовый класс моделей (DeclarativeBase)
 │   │   └── session.py   # подключение к БД, зависимость get_session
-│   ├── models/          # ORM-модели (таблицы)
+│   ├── models/          # ORM-модели (таблицы) — по ER-диаграмме
+│   ├── schemas/         # Pydantic-схемы запросов и ответов
+│   ├── services/        # бизнес-логика и работа с БД
 │   └── api/
+│       ├── deps.py      # текущий пользователь, проверка ролей
 │       ├── router.py    # общий роутер с префиксом /api
-│       └── routes/      # эндпоинты по разделам
+│       └── routes/      # эндпоинты по разделам (контроллеры)
 ├── alembic/             # миграции БД
 ├── tests/               # тесты (pytest), работают с отдельной базой
 ├── docker-compose.yml   # PostgreSQL в Docker (если не хотите ставить локально)
@@ -89,6 +96,20 @@ uvicorn app.main:app --reload
 
 Конфигурация запускает сервер без `--reload`, чтобы отладчик работал стабильно: после изменения кода
 перезапустите её (⌘F5).
+
+## Пользователи и роли
+
+Регистрация через API (`POST /api/auth/register`) всегда создаёт роль `team_rep`.
+Остальные роли выдаёт администратор: `PATCH /api/users/{id}/role`.
+
+Первого администратора создайте командой (пароль спросит в консоли):
+
+```bash
+python -m app.cli create-user --email admin@example.com --full-name "Администратор" --role admin
+```
+
+Проверить в Swagger (http://localhost:8000/docs): выполнить `POST /api/auth/login`, скопировать
+`access_token`, нажать **Authorize** и вставить токен.
 
 ## Тесты и линтер
 

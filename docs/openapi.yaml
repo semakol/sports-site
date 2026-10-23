@@ -1,0 +1,1156 @@
+openapi: 3.1.0
+info:
+  title: Sports Site API
+  version: 0.2.0
+  description: |
+    API платформы любительских футбольных турниров.
+
+    - Авторизация: `Authorization: Bearer <token>` (токен из `POST /auth/login`).
+    - Роли: `admin`, `organizer`, `team_rep`, `curator`. Просмотр — без авторизации.
+    - Ошибки: `{ code, message, field }`; 400 — данные, 401 — нет токена, 403 — нет прав, 404 — не найдено, 409 — конфликт.
+    - Списки: `limit` / `offset`, ответ `{ items, total }`.
+
+servers:
+  - url: http://localhost:8000/api
+  - url: http://localhost:4010
+    description: Mock (Prism)
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: auth
+  - name: users
+  - name: teams
+  - name: players
+  - name: tournaments
+  - name: matches
+  - name: lineups
+  - name: protocol
+
+paths:
+  # ─────────── auth ───────────
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Регистрация
+      security: []
+      requestBody: { $ref: '#/components/requestBodies/Register' }
+      responses:
+        '201': { $ref: '#/components/responses/User' }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Вход
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Token' }
+        '401': { $ref: '#/components/responses/Error' }
+
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Текущий пользователь
+      responses:
+        '200': { $ref: '#/components/responses/User' }
+        '401': { $ref: '#/components/responses/Error' }
+
+  # ─────────── users ───────────
+  /users:
+    get:
+      tags: [users]
+      summary: Список пользователей (admin, organizer)
+      parameters:
+        - { name: role, in: query, schema: { $ref: '#/components/schemas/Role' } }
+        - { $ref: '#/components/parameters/Search' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Offset' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserPage' }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /users/{userId}/role:
+    patch:
+      tags: [users]
+      summary: Изменить роль (admin)
+      parameters: [{ $ref: '#/components/parameters/UserId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role: { $ref: '#/components/schemas/Role' }
+      responses:
+        '200': { $ref: '#/components/responses/User' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  # ─────────── teams ───────────
+  /teams:
+    get:
+      tags: [teams]
+      summary: Список команд
+      security: [{}, { bearerAuth: [] }]
+      parameters:
+        - { name: mine, in: query, description: Только мои команды, schema: { type: boolean } }
+        - { $ref: '#/components/parameters/Search' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Offset' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TeamPage' }
+    post:
+      tags: [teams]
+      summary: Создать команду (team_rep)
+      requestBody: { $ref: '#/components/requestBodies/TeamInput' }
+      responses:
+        '201': { $ref: '#/components/responses/Team' }
+        '400': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /teams/{teamId}:
+    parameters: [{ $ref: '#/components/parameters/TeamId' }]
+    get:
+      tags: [teams]
+      summary: Команда
+      security: []
+      responses:
+        '200': { $ref: '#/components/responses/Team' }
+        '404': { $ref: '#/components/responses/Error' }
+    patch:
+      tags: [teams]
+      summary: Изменить команду (представитель)
+      requestBody: { $ref: '#/components/requestBodies/TeamInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Team' }
+        '403': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [teams]
+      summary: Удалить команду (представитель)
+      responses:
+        '204': { description: Удалено }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /teams/{teamId}/players:
+    parameters: [{ $ref: '#/components/parameters/TeamId' }]
+    get:
+      tags: [teams]
+      summary: Игроки команды
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/RosterEntry' } }
+    post:
+      tags: [teams]
+      summary: Добавить игрока из базы (представитель)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [player_id]
+              properties:
+                player_id: { type: integer }
+                shirt_number: { type: [integer, 'null'], minimum: 1, maximum: 99 }
+      responses:
+        '201':
+          description: Добавлен
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RosterEntry' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /teams/{teamId}/players/{playerId}:
+    parameters:
+      - { $ref: '#/components/parameters/TeamId' }
+      - { $ref: '#/components/parameters/PlayerId' }
+    delete:
+      tags: [teams]
+      summary: Исключить игрока из команды (представитель)
+      responses:
+        '204': { description: Исключён }
+
+  # ─────────── players ───────────
+  /players:
+    get:
+      tags: [players]
+      summary: Поиск игроков в базе (team_rep, organizer)
+      parameters:
+        - { $ref: '#/components/parameters/Search' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Offset' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlayerPage' }
+    post:
+      tags: [players]
+      summary: Создать игрока (team_rep)
+      description: ФИО, дата рождения и фото обязательны. `team_id` — сразу добавить в команду.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/PlayerCreate' }
+      responses:
+        '201': { $ref: '#/components/responses/Player' }
+        '400': { $ref: '#/components/responses/Error' }
+
+  /players/{playerId}:
+    parameters: [{ $ref: '#/components/parameters/PlayerId' }]
+    get:
+      tags: [players]
+      summary: Профиль игрока (без даты рождения)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlayerProfile' }
+        '404': { $ref: '#/components/responses/Error' }
+    patch:
+      tags: [players]
+      summary: Изменить игрока (представитель его команды)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlayerUpdate' }
+      responses:
+        '200': { $ref: '#/components/responses/Player' }
+
+  /players/{playerId}/photo:
+    parameters: [{ $ref: '#/components/parameters/PlayerId' }]
+    put:
+      tags: [players]
+      summary: Заменить фото
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo: { type: string, format: binary }
+      responses:
+        '200': { $ref: '#/components/responses/Player' }
+
+  # ─────────── tournaments ───────────
+  /tournaments:
+    get:
+      tags: [tournaments]
+      summary: Список турниров
+      security: [{}, { bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/TournamentStatus' } }
+        - { name: mine, in: query, description: Только мои (organizer), schema: { type: boolean } }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Offset' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TournamentPage' }
+    post:
+      tags: [tournaments]
+      summary: Создать черновик турнира (organizer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TournamentInput' }
+      responses:
+        '201': { $ref: '#/components/responses/Tournament' }
+        '400': { $ref: '#/components/responses/Error' }
+
+  /tournaments/{tournamentId}:
+    parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    get:
+      tags: [tournaments]
+      summary: Турнир
+      security: []
+      responses:
+        '200': { $ref: '#/components/responses/Tournament' }
+        '404': { $ref: '#/components/responses/Error' }
+    patch:
+      tags: [tournaments]
+      summary: Изменить турнир (только в draft)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TournamentInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Tournament' }
+        '409': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [tournaments]
+      summary: Удалить турнир (только в draft)
+      responses:
+        '204': { description: Удалено }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /tournaments/{tournamentId}/publish:
+    parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    post:
+      tags: [tournaments]
+      summary: Опубликовать турнир (draft → published)
+      responses:
+        '200': { $ref: '#/components/responses/Tournament' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /tournaments/{tournamentId}/groups:
+    parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    get:
+      tags: [tournaments]
+      summary: Группы с командами
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Group' } }
+    post:
+      tags: [tournaments]
+      summary: Добавить группу
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, example: A }
+      responses:
+        '201':
+          description: Создана
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Group' }
+
+  /tournaments/{tournamentId}/groups/{groupId}:
+    parameters:
+      - { $ref: '#/components/parameters/TournamentId' }
+      - { name: groupId, in: path, required: true, schema: { type: integer } }
+    delete:
+      tags: [tournaments]
+      summary: Удалить группу (команды остаются в турнире без группы)
+      responses:
+        '204': { description: Удалено }
+
+  /tournaments/{tournamentId}/teams:
+    parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    get:
+      tags: [tournaments]
+      summary: Участники турнира
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/TournamentTeam' } }
+    post:
+      tags: [tournaments]
+      summary: Добавить команды в турнир
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [team_ids]
+              properties:
+                team_ids: { type: array, items: { type: integer }, minItems: 1 }
+                group_id: { type: [integer, 'null'] }
+      responses:
+        '201':
+          description: Добавлены
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/TournamentTeam' } }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /tournaments/{tournamentId}/teams/{teamId}:
+    parameters:
+      - { $ref: '#/components/parameters/TournamentId' }
+      - { $ref: '#/components/parameters/TeamId' }
+    patch:
+      tags: [tournaments]
+      summary: Перенести команду в группу / задать посев
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                group_id: { type: [integer, 'null'] }
+                seed: { type: [integer, 'null'], minimum: 1 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TournamentTeam' }
+    delete:
+      tags: [tournaments]
+      summary: Убрать команду из турнира (до генерации расписания)
+      responses:
+        '204': { description: Удалено }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /tournaments/{tournamentId}/schedule:
+    parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    post:
+      tags: [tournaments]
+      summary: Сгенерировать расписание
+      description: |
+        `round_robin` — матчи в группах, `playoff` — сетка по посеву, `mixed` — группы, а сетка
+        плей-офф создаётся с пустыми слотами и заполняется после группового этапа.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [first_round_at]
+              properties:
+                first_round_at: { type: string, format: date-time }
+                days_between_rounds: { type: integer, minimum: 1, default: 7 }
+                venue: { type: [string, 'null'] }
+      responses:
+        '201':
+          description: Созданные матчи
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Match' } }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /tournaments/{tournamentId}/matches:
+    parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    post:
+      tags: [tournaments]
+      summary: Добавить матч вручную
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MatchInput' }
+      responses:
+        '201': { $ref: '#/components/responses/Match' }
+
+  /tournaments/{tournamentId}/standings:
+    parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    get:
+      tags: [tournaments]
+      summary: Турнирные таблицы (по группам)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/GroupStandings' } }
+
+  /tournaments/{tournamentId}/bracket:
+    parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    get:
+      tags: [tournaments]
+      summary: Сетка плей-офф
+      security: []
+      responses:
+        '200':
+          description: Раунды от первого до финала
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/BracketRound' } }
+
+  /tournaments/{tournamentId}/player-stats:
+    parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    get:
+      tags: [tournaments]
+      summary: Бомбардиры и карточки
+      security: []
+      parameters:
+        - { name: sort, in: query, schema: { type: string, enum: [goals, yellow_cards, red_cards], default: goals } }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/PlayerStatRow' } }
+
+  # ─────────── matches ───────────
+  /matches:
+    get:
+      tags: [matches]
+      summary: Лента матчей
+      security: [{}, { bearerAuth: [] }]
+      parameters:
+        - { name: tournament_id, in: query, schema: { type: integer } }
+        - { name: team_id, in: query, schema: { type: integer } }
+        - { name: status, in: query, description: 'Через запятую: live,finished', schema: { type: string } }
+        - { name: date_from, in: query, schema: { type: string, format: date } }
+        - { name: date_to, in: query, schema: { type: string, format: date } }
+        - { name: curator, in: query, description: Мои матчи как куратора, schema: { type: string, enum: [me] } }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Offset' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MatchPage' }
+
+  /matches/{matchId}:
+    parameters: [{ $ref: '#/components/parameters/MatchId' }]
+    get:
+      tags: [matches]
+      summary: Карточка матча с протоколом
+      security: []
+      responses:
+        '200': { $ref: '#/components/responses/MatchDetail' }
+        '404': { $ref: '#/components/responses/Error' }
+    patch:
+      tags: [matches]
+      summary: Перенести / отменить / назначить куратора (organizer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scheduled_at: { type: string, format: date-time }
+                venue: { type: [string, 'null'] }
+                curator_id: { type: [integer, 'null'] }
+                status: { type: string, enum: [scheduled, postponed, cancelled] }
+      responses:
+        '200': { $ref: '#/components/responses/Match' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /matches/{matchId}/forfeit:
+    parameters: [{ $ref: '#/components/parameters/MatchId' }]
+    post:
+      tags: [matches]
+      summary: Техническое поражение 0:3 (curator, organizer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [forfeit_team_id]
+              properties:
+                forfeit_team_id: { type: integer, description: Команда, которой засчитано поражение }
+      responses:
+        '200': { $ref: '#/components/responses/MatchDetail' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /matches/{matchId}/stream:
+    parameters: [{ $ref: '#/components/parameters/MatchId' }]
+    get:
+      tags: [matches]
+      summary: Live-обновления (SSE)
+      description: 'События: `event_created`, `event_cancelled`, `status_changed`. В `data` — JSON `StreamMessage`.'
+      security: []
+      responses:
+        '200':
+          description: Поток событий
+          content:
+            text/event-stream:
+              schema: { type: string }
+
+  # ─────────── lineups ───────────
+  /matches/{matchId}/lineups/{teamId}:
+    parameters:
+      - { $ref: '#/components/parameters/MatchId' }
+      - { $ref: '#/components/parameters/TeamId' }
+    get:
+      tags: [lineups]
+      summary: Состав команды на матч
+      security: []
+      responses:
+        '200': { $ref: '#/components/responses/Lineup' }
+        '404': { $ref: '#/components/responses/Error' }
+    put:
+      tags: [lineups]
+      summary: Подать / изменить состав (представитель)
+      description: Не позже чем за 1 час до матча, иначе 409 `LINEUP_LOCKED`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LineupInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Lineup' }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  # ─────────── protocol (curator) ───────────
+  /matches/{matchId}/start:
+    parameters: [{ $ref: '#/components/parameters/MatchId' }]
+    post:
+      tags: [protocol]
+      summary: Начать матч
+      responses:
+        '200': { $ref: '#/components/responses/MatchDetail' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /matches/{matchId}/end-period:
+    parameters: [{ $ref: '#/components/parameters/MatchId' }]
+    post:
+      tags: [protocol]
+      summary: Закончить тайм
+      responses:
+        '200': { $ref: '#/components/responses/MatchDetail' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /matches/{matchId}/start-period:
+    parameters: [{ $ref: '#/components/parameters/MatchId' }]
+    post:
+      tags: [protocol]
+      summary: Начать следующий тайм
+      responses:
+        '200': { $ref: '#/components/responses/MatchDetail' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /matches/{matchId}/finish:
+    parameters: [{ $ref: '#/components/parameters/MatchId' }]
+    post:
+      tags: [protocol]
+      summary: Завершить матч и закрыть протокол
+      description: Для ничьей в плей-офф нужно передать счёт серии пенальти.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                home_penalties: { type: integer, minimum: 0 }
+                away_penalties: { type: integer, minimum: 0 }
+      responses:
+        '200': { $ref: '#/components/responses/MatchDetail' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /matches/{matchId}/events:
+    parameters: [{ $ref: '#/components/parameters/MatchId' }]
+    get:
+      tags: [protocol]
+      summary: События матча
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/MatchEvent' } }
+    post:
+      tags: [protocol]
+      summary: Внести событие
+      description: Минуту и команду определяет сервер. Повтор с тем же `client_event_id` вернёт 200 без дубля.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MatchEventInput' }
+      responses:
+        '201': { $ref: '#/components/responses/MatchEventResult' }
+        '200': { $ref: '#/components/responses/MatchEventResult' }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /matches/{matchId}/events/{eventId}:
+    parameters:
+      - { $ref: '#/components/parameters/MatchId' }
+      - { name: eventId, in: path, required: true, schema: { type: integer } }
+    delete:
+      tags: [protocol]
+      summary: Отменить событие (до закрытия протокола)
+      responses:
+        '200':
+          description: Актуальный счёт
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Score' }
+        '409': { $ref: '#/components/responses/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  parameters:
+    UserId: { name: userId, in: path, required: true, schema: { type: integer } }
+    TeamId: { name: teamId, in: path, required: true, schema: { type: integer } }
+    PlayerId: { name: playerId, in: path, required: true, schema: { type: integer } }
+    TournamentId: { name: tournamentId, in: path, required: true, schema: { type: integer } }
+    MatchId: { name: matchId, in: path, required: true, schema: { type: integer } }
+    Search: { name: search, in: query, schema: { type: string } }
+    Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+    Offset: { name: offset, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+
+  requestBodies:
+    Register:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email, password, full_name]
+            properties:
+              email: { type: string, format: email }
+              password: { type: string, minLength: 8 }
+              full_name: { type: string }
+    TeamInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string, example: Уралмаш }
+              logo_url: { type: [string, 'null'] }
+
+  responses:
+    Error:
+      description: Ошибка
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    User:
+      description: OK
+      content: { application/json: { schema: { $ref: '#/components/schemas/User' } } }
+    Team:
+      description: OK
+      content: { application/json: { schema: { $ref: '#/components/schemas/Team' } } }
+    Player:
+      description: OK
+      content: { application/json: { schema: { $ref: '#/components/schemas/Player' } } }
+    Tournament:
+      description: OK
+      content: { application/json: { schema: { $ref: '#/components/schemas/Tournament' } } }
+    Match:
+      description: OK
+      content: { application/json: { schema: { $ref: '#/components/schemas/Match' } } }
+    MatchDetail:
+      description: OK
+      content: { application/json: { schema: { $ref: '#/components/schemas/MatchDetail' } } }
+    Lineup:
+      description: OK
+      content: { application/json: { schema: { $ref: '#/components/schemas/Lineup' } } }
+    MatchEventResult:
+      description: Событие и счёт
+      content: { application/json: { schema: { $ref: '#/components/schemas/MatchEventResult' } } }
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message, field]
+      properties:
+        code: { type: string, example: LINEUP_LOCKED }
+        message: { type: string, example: Состав можно изменить не позднее чем за 1 час до матча }
+        field: { type: [string, 'null'] }
+
+    # ─── перечисления ───
+    Role: { type: string, enum: [admin, organizer, team_rep, curator] }
+    TournamentFormat: { type: string, enum: [round_robin, playoff, mixed] }
+    TournamentStatus: { type: string, enum: [draft, published, finished] }
+    MatchStatus: { type: string, enum: [scheduled, live, finished, postponed, cancelled] }
+    MatchStage: { type: string, enum: [group, playoff] }
+    ResultType: { type: [string, 'null'], enum: [regular, penalties, forfeit, null] }
+    EventType: { type: string, enum: [goal, own_goal, yellow_card, red_card, substitution] }
+
+    # ─── пользователи ───
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    Token:
+      type: object
+      required: [access_token, token_type]
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, enum: [bearer] }
+    UserShort:
+      type: object
+      required: [id, full_name]
+      properties:
+        id: { type: integer }
+        full_name: { type: string }
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserShort'
+        - type: object
+          required: [email, role]
+          properties:
+            email: { type: string, format: email }
+            role: { $ref: '#/components/schemas/Role' }
+    UserPage:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/User' } }
+        total: { type: integer }
+
+    # ─── команды и игроки ───
+    TeamShort:
+      type: object
+      required: [id, name, logo_url]
+      properties:
+        id: { type: integer, example: 12 }
+        name: { type: string, example: Уралмаш }
+        logo_url: { type: [string, 'null'] }
+    Team:
+      allOf:
+        - $ref: '#/components/schemas/TeamShort'
+        - type: object
+          required: [representative, players_count]
+          properties:
+            representative: { $ref: '#/components/schemas/UserShort' }
+            players_count: { type: integer }
+    TeamPage:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Team' } }
+        total: { type: integer }
+    PlayerShort:
+      type: object
+      required: [id, last_name, first_name, middle_name, photo_url]
+      properties:
+        id: { type: integer, example: 7 }
+        last_name: { type: string, example: Иванов }
+        first_name: { type: string, example: Пётр }
+        middle_name: { type: [string, 'null'] }
+        photo_url: { type: string, example: /media/players/7.jpg }
+    Player:
+      allOf:
+        - $ref: '#/components/schemas/PlayerShort'
+        - type: object
+          required: [birth_date]
+          properties:
+            birth_date: { type: string, format: date }
+    PlayerPage:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Player' } }
+        total: { type: integer }
+    PlayerCreate:
+      type: object
+      required: [last_name, first_name, birth_date, photo, pd_consent]
+      properties:
+        last_name: { type: string }
+        first_name: { type: string }
+        middle_name: { type: string }
+        birth_date: { type: string, format: date }
+        photo: { type: string, format: binary }
+        pd_consent: { type: boolean, const: true, description: Согласие на обработку ПД }
+        team_id: { type: integer }
+    PlayerUpdate:
+      type: object
+      properties:
+        last_name: { type: string }
+        first_name: { type: string }
+        middle_name: { type: [string, 'null'] }
+        birth_date: { type: string, format: date }
+    PlayerTotals:
+      type: object
+      required: [matches, goals, yellow_cards, red_cards]
+      properties:
+        matches: { type: integer }
+        goals: { type: integer }
+        yellow_cards: { type: integer }
+        red_cards: { type: integer }
+    PlayerProfile:
+      allOf:
+        - $ref: '#/components/schemas/PlayerShort'
+        - type: object
+          required: [teams, totals]
+          properties:
+            teams: { type: array, items: { $ref: '#/components/schemas/TeamShort' } }
+            totals: { $ref: '#/components/schemas/PlayerTotals' }
+    PlayerStatRow:
+      allOf:
+        - type: object
+          required: [player, team]
+          properties:
+            player: { $ref: '#/components/schemas/PlayerShort' }
+            team: { $ref: '#/components/schemas/TeamShort' }
+        - $ref: '#/components/schemas/PlayerTotals'
+    RosterEntry:
+      type: object
+      required: [player, shirt_number]
+      properties:
+        player: { $ref: '#/components/schemas/PlayerShort' }
+        shirt_number: { type: [integer, 'null'] }
+
+    # ─── турниры ───
+    TournamentInput:
+      type: object
+      required: [name, format, start_date, end_date]
+      properties:
+        name: { type: string, example: Осенний кубок УрФУ 2026 }
+        format: { $ref: '#/components/schemas/TournamentFormat' }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        points_win: { type: integer, default: 3 }
+        points_draw: { type: integer, default: 1 }
+        halves_count: { type: integer, default: 2 }
+        half_duration_min: { type: integer, example: 25 }
+        advance_per_group: { type: [integer, 'null'], description: Сколько выходят из группы (mixed) }
+    Tournament:
+      allOf:
+        - $ref: '#/components/schemas/TournamentInput'
+        - type: object
+          required: [id, status, organizer, teams_count]
+          properties:
+            id: { type: integer, example: 1 }
+            status: { $ref: '#/components/schemas/TournamentStatus' }
+            organizer: { $ref: '#/components/schemas/UserShort' }
+            teams_count: { type: integer }
+    TournamentPage:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Tournament' } }
+        total: { type: integer }
+    GroupShort:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: integer }
+        name: { type: string, example: A }
+    Group:
+      allOf:
+        - $ref: '#/components/schemas/GroupShort'
+        - type: object
+          required: [teams]
+          properties:
+            teams: { type: array, items: { $ref: '#/components/schemas/TeamShort' } }
+    TournamentTeam:
+      type: object
+      required: [team, group, seed]
+      properties:
+        team: { $ref: '#/components/schemas/TeamShort' }
+        group: { oneOf: [{ $ref: '#/components/schemas/GroupShort' }, { type: 'null' }] }
+        seed: { type: [integer, 'null'] }
+    StandingRow:
+      type: object
+      required: [position, team, played, won, drawn, lost, goals_for, goals_against, points]
+      properties:
+        position: { type: integer }
+        team: { $ref: '#/components/schemas/TeamShort' }
+        played: { type: integer }
+        won: { type: integer }
+        drawn: { type: integer }
+        lost: { type: integer }
+        goals_for: { type: integer }
+        goals_against: { type: integer }
+        points: { type: integer }
+    GroupStandings:
+      type: object
+      required: [group, rows]
+      properties:
+        group: { oneOf: [{ $ref: '#/components/schemas/GroupShort' }, { type: 'null' }] }
+        rows: { type: array, items: { $ref: '#/components/schemas/StandingRow' } }
+    BracketRound:
+      type: object
+      required: [round, name, matches]
+      properties:
+        round: { type: integer }
+        name: { type: string, example: 1/2 финала }
+        matches: { type: array, items: { $ref: '#/components/schemas/Match' } }
+
+    # ─── матчи ───
+    Score:
+      type: object
+      required: [home_score, away_score]
+      properties:
+        home_score: { type: integer }
+        away_score: { type: integer }
+    MatchInput:
+      type: object
+      required: [scheduled_at]
+      properties:
+        stage: { $ref: '#/components/schemas/MatchStage' }
+        group_id: { type: [integer, 'null'] }
+        round: { type: integer }
+        home_team_id: { type: [integer, 'null'] }
+        away_team_id: { type: [integer, 'null'] }
+        scheduled_at: { type: string, format: date-time }
+        venue: { type: [string, 'null'] }
+        curator_id: { type: [integer, 'null'] }
+    Match:
+      allOf:
+        - $ref: '#/components/schemas/Score'
+        - type: object
+          required:
+            - id
+            - tournament
+            - stage
+            - group
+            - round
+            - home_team
+            - away_team
+            - scheduled_at
+            - venue
+            - status
+            - result_type
+            - home_penalties
+            - away_penalties
+            - winner_team_id
+            - next_match_id
+          properties:
+            id: { type: integer, example: 42 }
+            tournament: { type: object, properties: { id: { type: integer }, name: { type: string } } }
+            stage: { $ref: '#/components/schemas/MatchStage' }
+            group: { oneOf: [{ $ref: '#/components/schemas/GroupShort' }, { type: 'null' }] }
+            round: { type: integer }
+            home_team: { oneOf: [{ $ref: '#/components/schemas/TeamShort' }, { type: 'null' }], description: null — соперник ещё не определён }
+            away_team: { oneOf: [{ $ref: '#/components/schemas/TeamShort' }, { type: 'null' }] }
+            scheduled_at: { type: string, format: date-time }
+            venue: { type: [string, 'null'] }
+            status: { $ref: '#/components/schemas/MatchStatus' }
+            result_type: { $ref: '#/components/schemas/ResultType' }
+            home_penalties: { type: [integer, 'null'] }
+            away_penalties: { type: [integer, 'null'] }
+            winner_team_id: { type: [integer, 'null'] }
+            next_match_id: { type: [integer, 'null'], description: Матч плей-офф, куда проходит победитель }
+    MatchPage:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Match' } }
+        total: { type: integer }
+    Period:
+      type: object
+      required: [number, started_at, ended_at]
+      properties:
+        number: { type: integer }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: [string, 'null'], format: date-time }
+    LineupPlayer:
+      type: object
+      required: [player, shirt_number, is_starting, is_captain]
+      properties:
+        player: { $ref: '#/components/schemas/PlayerShort' }
+        shirt_number: { type: integer }
+        is_starting: { type: boolean, description: В стартовом составе (иначе запасной) }
+        is_captain: { type: boolean }
+    Lineup:
+      type: object
+      required: [team, submitted_at, players]
+      properties:
+        team: { $ref: '#/components/schemas/TeamShort' }
+        submitted_at: { type: string, format: date-time }
+        players: { type: array, items: { $ref: '#/components/schemas/LineupPlayer' } }
+    LineupInput:
+      type: object
+      required: [players]
+      properties:
+        players:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [player_id, shirt_number, is_starting]
+            properties:
+              player_id: { type: integer }
+              shirt_number: { type: integer, minimum: 1, maximum: 99 }
+              is_starting: { type: boolean }
+              is_captain: { type: boolean, default: false }
+    MatchEvent:
+      type: object
+      required: [id, type, player, player_in, team, period, minute]
+      properties:
+        id: { type: integer, example: 501 }
+        type: { $ref: '#/components/schemas/EventType' }
+        player: { $ref: '#/components/schemas/PlayerShort' }
+        player_in:
+          oneOf: [{ $ref: '#/components/schemas/PlayerShort' }, { type: 'null' }]
+          description: Выходящий игрок (только для замены; `player` — уходящий)
+        team: { $ref: '#/components/schemas/TeamShort' }
+        period: { type: integer }
+        minute: { type: integer, example: 23 }
+    MatchEventInput:
+      type: object
+      required: [client_event_id, type, player_id, client_ts]
+      properties:
+        client_event_id: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/EventType' }
+        player_id: { type: integer, description: Для замены — уходящий }
+        player_in_id: { type: integer, description: Только для замены — выходящий }
+        client_ts: { type: string, format: date-time }
+    MatchEventResult:
+      allOf:
+        - type: object
+          required: [event]
+          properties:
+            event: { $ref: '#/components/schemas/MatchEvent' }
+        - $ref: '#/components/schemas/Score'
+    MatchDetail:
+      allOf:
+        - $ref: '#/components/schemas/Match'
+        - type: object
+          required: [curator, lineup_deadline, current_period, periods, lineups, events]
+          properties:
+            curator: { oneOf: [{ $ref: '#/components/schemas/UserShort' }, { type: 'null' }] }
+            lineup_deadline: { type: string, format: date-time, description: scheduled_at − 1 час }
+            current_period: { type: [integer, 'null'] }
+            periods: { type: array, items: { $ref: '#/components/schemas/Period' } }
+            lineups:
+              type: object
+              properties:
+                home: { oneOf: [{ $ref: '#/components/schemas/Lineup' }, { type: 'null' }] }
+                away: { oneOf: [{ $ref: '#/components/schemas/Lineup' }, { type: 'null' }] }
+            events: { type: array, items: { $ref: '#/components/schemas/MatchEvent' } }
+    StreamMessage:
+      oneOf:
+        - $ref: '#/components/schemas/MatchEventResult'
+        - allOf:
+            - { type: object, required: [event_id], properties: { event_id: { type: integer } } }
+            - $ref: '#/components/schemas/Score'
+        - type: object
+          required: [status, current_period]
+          properties:
+            status: { $ref: '#/components/schemas/MatchStatus' }
+            current_period: { type: [integer, 'null'] }

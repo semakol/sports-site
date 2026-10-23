@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # backend/.env — путь не зависит от рабочей папки (запуск из PyCharm, из корня репозитория и т.д.)
@@ -19,6 +20,11 @@ class Settings(BaseSettings):
 
     # Адреса фронтенда, которым разрешены запросы к API (CORS)
     cors_origins: list[str] = ["http://localhost:5173"]
+
+    # JWT. В .env обязательно задать свой секрет: python -c "import secrets; print(secrets.token_urlsafe(32))"
+    jwt_secret_key: str = Field("dev-only-secret-change-me-in-env-file", min_length=32)
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60 * 24
 
 
 settings = Settings()
