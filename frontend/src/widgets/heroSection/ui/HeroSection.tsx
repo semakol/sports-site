@@ -19,6 +19,7 @@ const HeroSection = () => {
             </div>
             <div className={styles.imageWrapper}>
                 <img 
+                    className={styles.image}
                     src={HeroImage}
                     alt="Футбольный мяч на траве"
                 />

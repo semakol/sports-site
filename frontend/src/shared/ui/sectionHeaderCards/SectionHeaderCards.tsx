@@ -2,6 +2,7 @@ import styles from './SectionHeaderCards.module.scss'
 import type { FC } from 'react';
 import type { SectionHeaderCardsProps } from './type';
 import { NavLink } from 'react-router-dom'
+
 import ArrowRightIcon from "@shared/assets/icons/arrowRight.svg?react"
 
 const SectionHeaderCards: FC<SectionHeaderCardsProps> = ({ icon, title, linkTo, linkText }) => {
@@ -13,10 +14,12 @@ const SectionHeaderCards: FC<SectionHeaderCardsProps> = ({ icon, title, linkTo, 
                     {title}
                 </h2>
             </div>
-            <NavLink to={linkTo} className={styles.navItem}>
-                <span>{linkText}</span>
-                <ArrowRightIcon />
-            </NavLink>
+            {linkTo && 
+                <NavLink to={linkTo} className={styles.navItem}>
+                    <span>{linkText}</span>
+                    <ArrowRightIcon />
+                </NavLink>
+            }
         </div>
     )
 }

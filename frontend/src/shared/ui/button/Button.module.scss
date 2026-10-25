@@ -15,6 +15,15 @@
     }
 }
 
+.noFill {
+    background-color: transparent;
+    border: 2px solid #fff;
+
+    .textContent {
+        color: #fff;
+    }
+}
+
 .textContent {
     margin: 0;
     padding: 0;

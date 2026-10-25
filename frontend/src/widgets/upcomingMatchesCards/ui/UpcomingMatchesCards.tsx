@@ -18,7 +18,7 @@ const UpcomingMatchesCards = () => {
             <SectionHeaderCards 
                 icon={<CalendarIcon />}
                 title="Ближайшие матчи"
-                linkTo={MATCHES_ROUTE}
+                linkTo={`${MATCHES_ROUTE.path}/${MATCHES_ROUTE.children.BY_DATES}`}
                 linkText="Все матчи"
             />
             <div className={styles.grid}>

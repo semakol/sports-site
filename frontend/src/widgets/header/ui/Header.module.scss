@@ -40,6 +40,22 @@
     @include text-medium-17;
     color: #000;
     text-decoration: none;
+    position: relative;
+}
+
+.active {
+    color: $link-color;
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: -10px;
+        right: -10px;
+        bottom: -9px;
+        height: 1.5px;
+        background-color: $link-color;
+        border-radius: 5px;
+    }
 }
 
 .loginButton {
