@@ -1,0 +1,33 @@
+.segmentedControl {
+    margin: 0;
+    height: 48px;
+    display: flex;
+    padding: 2px;
+    background-color: #FCFCFF;
+    border-radius: 15px;
+    box-shadow: 0px 0px 5px 0px #00000040;
+}
+
+.buttonControl {
+    background-color: transparent;
+    padding: 12px 18px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+
+    &.active {
+        background-color: $link-color;
+        .text {
+            color: #fff;
+        }
+    }
+}
+
+.text {
+    margin: 0;
+    font-size: 16px;
+    font-weight: $fw-regular;
+    color: #000;
+    white-space: nowrap;
+}
