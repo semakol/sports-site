@@ -34,6 +34,10 @@
     font-weight: $fw-medium;
     color: #fff;
     margin-bottom: 8px;
+
+    .large & {
+        margin-bottom: 15px;
+    }
 }
 
 .year {
@@ -41,6 +45,10 @@
     font-weight: $fw-regular;
     color: #fff;
     margin-bottom: 19px;
+
+    .large & {
+        margin-bottom: 32px;
+    }
 }
 
 .statusWrapper {
@@ -48,6 +56,10 @@
     padding: 5px 12px;
     border-radius: 10px;
     margin-bottom: 24px;
+
+    .large & {
+        margin-bottom: 41px;
+    }
 }
 
 .statusActive {

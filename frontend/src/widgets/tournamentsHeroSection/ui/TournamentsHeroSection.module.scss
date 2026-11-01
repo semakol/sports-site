@@ -1,0 +1,27 @@
+.tournamentsHeroSection {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.title {
+    font-size: 48px;
+    font-weight: $fw-semi-bold;
+    color: #000;
+    margin: 0;
+    padding: 0;
+}
+
+.subtitle {
+    font-size: 18px;
+    font-weight: $fw-regular;
+    color: $bright-grey-color;
+}
+
+.filter {
+    display: flex;
+    gap: 43px;
+}
+
+.search {
+    max-width: 587px;
+}
