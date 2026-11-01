@@ -15,7 +15,7 @@ const HeroSection = () => {
                         Следи за матчами, результатами и статистикой
                     </p>
                 </div>
-                <Search />
+                <Search placeholder='Найти турнир, команду, игрока' />
             </div>
             <div className={styles.imageWrapper}>
                 <img 

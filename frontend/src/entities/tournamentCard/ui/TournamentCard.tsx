@@ -11,7 +11,8 @@ const TournamentCard: FC<TournamentCardProps> = ({
     year,
     status,
     teamsCount,
-    format
+    format,
+    isLarge=false
 }) => {
     const statusClassMap: Record<string, string> = {
         'Идет': styles.statusActive,
@@ -22,7 +23,7 @@ const TournamentCard: FC<TournamentCardProps> = ({
     const currentStatusClass = statusClassMap[status] || '';
     
   return (
-    <div className={styles.tournamentCard}>
+    <div className={`${styles.tournamentCard} ${isLarge && styles.large}`}>
       <span className={styles.title}>{title}</span>
       <span className={styles.year}>{year}</span>
       <div className={`${styles.statusWrapper} ${currentStatusClass}`}>

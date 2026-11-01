@@ -22,7 +22,7 @@ const MatchesHeroSection = () => {
                     </p>
                 </div>
                 <div className={styles.groupSearchControl}>
-                    <Search />
+                    <Search placeholder='Найти матч' />
                     <SegmentedControl className={styles.segmentedControl} routes={routes} />
                 </div>
                 <div className={styles.filter}>

@@ -9,7 +9,7 @@ const MOCK_TOURNAMENTS = [
     {
         id: 1,
         title: 'Студенческая лига',
-        year: 2026,
+        year: '2026',
         status: 'Идет',
         teamsCount: 12,
         format: 'Чемпионат',
@@ -17,7 +17,7 @@ const MOCK_TOURNAMENTS = [
     {
         id: 2,
         title: 'Студенческая лига',
-        year: 2026,
+        year: '2026',
         status: 'Идет',
         teamsCount: 12,
         format: 'Групповой этап',
@@ -25,7 +25,7 @@ const MOCK_TOURNAMENTS = [
     {
         id: 3,
         title: 'Студенческая лига',
-        year: 2026,
+        year: '2026',
         status: 'Регистрация',
         teamsCount: 12,
         format: '8 туров',
@@ -33,7 +33,7 @@ const MOCK_TOURNAMENTS = [
     {
         id: 4,
         title: 'Первенство Екатеринбурга',
-        year: 2026,
+        year: '2026',
         status: 'Скоро',
         teamsCount: 8,
         format: 'Плей-офф',

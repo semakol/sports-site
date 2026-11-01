@@ -1,9 +1,16 @@
 import { Routes, Route, Navigate  } from 'react-router-dom';
 import MainLayout from "@app/layouts/MainLayout"
 import { authRoutes, publicRoutes } from "./routeConfig";
-import { MAIN_ROUTE, MATCHES_ROUTE } from "@shared/const/router-path";
+import { 
+    MAIN_ROUTE, 
+    MATCHES_ROUTE, 
+    TOURNAMENTS_ROUTE,
+    TEAMS_ROUTE
+} from "@shared/const/router-path";
 import MainPage from "@pages/MainPage/MainPage";
+import TournamentsPage from "@pages/TournamentsPage/TournamentsPage"
 import MatchesPage from "@pages/MatchesPage/MatchesPage";
+import TeamsPage from "@pages/TeamsPage/TeamsPage"
 import MatchesByDates from "@widgets/matchesByDates"
 import MatchesByTournaments from "@widgets/matchesByTournaments"
 
@@ -21,13 +28,15 @@ const AppRouter = () => {
                 )} */}
 
                 <Route path={MAIN_ROUTE} element={<MainPage />}/>
+                <Route path={TOURNAMENTS_ROUTE} element={<TournamentsPage />}/>
                 <Route path={MATCHES_ROUTE.path} element={<MatchesPage />}>
                     <Route path={MATCHES_ROUTE.children.BY_DATES} element={<MatchesByDates />}/>
                     <Route path={MATCHES_ROUTE.children.BY_TOURNAMENTS} element={<MatchesByTournaments />}/>
                 </Route>
+                <Route path={TEAMS_ROUTE} element={<TeamsPage />}/>
 
 
-                <Route path="*" element={<Navigate to={ MAIN_ROUTE } />}/>
+                {/* <Route path="*" element={<Navigate to={ MAIN_ROUTE } />}/> */}
             </Route>
         </Routes>
     )
