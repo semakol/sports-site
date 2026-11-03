@@ -3,8 +3,9 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+BACKEND_DIR = Path(__file__).resolve().parents[2]
 # backend/.env — путь не зависит от рабочей папки (запуск из PyCharm, из корня репозитория и т.д.)
-ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
+ENV_FILE = BACKEND_DIR / ".env"
 
 
 class Settings(BaseSettings):
@@ -20,6 +21,10 @@ class Settings(BaseSettings):
 
     # Адреса фронтенда, которым разрешены запросы к API (CORS)
     cors_origins: list[str] = ["http://localhost:5173"]
+
+    # Загруженные файлы (фото игроков). Раздаются по адресу /media/...
+    media_dir: Path = BACKEND_DIR / "media"
+    max_photo_size_mb: int = 5
 
     # JWT. В .env обязательно задать свой секрет: python -c "import secrets; print(secrets.token_urlsafe(32))"
     jwt_secret_key: str = Field("dev-only-secret-change-me-in-env-file", min_length=32)

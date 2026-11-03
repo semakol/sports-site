@@ -142,7 +142,16 @@ paths:
     patch:
       tags: [teams]
       summary: Изменить команду (представитель)
-      requestBody: { $ref: '#/components/requestBodies/TeamInput' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Передаются только изменяемые поля
+              properties:
+                name: { type: string }
+                logo_url: { type: [string, 'null'] }
       responses:
         '200': { $ref: '#/components/responses/Team' }
         '403': { $ref: '#/components/responses/Error' }
@@ -214,7 +223,7 @@ paths:
     post:
       tags: [players]
       summary: Создать игрока (team_rep)
-      description: ФИО, дата рождения и фото обязательны. `team_id` — сразу добавить в команду.
+      description: ФИО, дата рождения, фото и `pd_consent=true` обязательны. `team_id` — сразу добавить в команду.
       requestBody:
         required: true
         content:

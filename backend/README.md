@@ -52,8 +52,8 @@ brew install postgresql@16
 brew services start postgresql@16
 
 psql -d postgres -c "CREATE ROLE sports WITH LOGIN PASSWORD 'sports';"
-psql -d postgres -c "CREATE DATABASE sports_site OWNER sports;"
-psql -d postgres -c "CREATE DATABASE sports_site_test OWNER sports;"
+psql -d postgres -c "CREATE DATABASE sports_site OWNER sports LC_COLLATE 'ru_RU.UTF-8' LC_CTYPE 'ru_RU.UTF-8' TEMPLATE template0;"
+psql -d postgres -c "CREATE DATABASE sports_site_test OWNER sports LC_COLLATE 'ru_RU.UTF-8' LC_CTYPE 'ru_RU.UTF-8' TEMPLATE template0;"
 ```
 
 ### Вариант 2: PostgreSQL в Docker

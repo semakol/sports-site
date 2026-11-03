@@ -29,6 +29,19 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+async def get_optional_user(
+    session: SessionDep,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
+) -> User | None:
+    """Для публичных эндпоинтов, которые ведут себя иначе для авторизованных (например, ?mine=true)."""
+    if credentials is None:
+        return None
+    return await get_current_user(session, credentials)
+
+
+OptionalUser = Annotated[User | None, Depends(get_optional_user)]
+
+
 def require_roles(*roles: UserRole):
     """Пускает только пользователей с одной из ролей: Depends(require_roles(UserRole.admin))."""
 

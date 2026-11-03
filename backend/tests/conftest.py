@@ -70,3 +70,46 @@ def make_user():
         return user, {"Authorization": f"Bearer {create_access_token(user.id)}"}
 
     return factory
+
+
+@pytest.fixture(autouse=True)
+def media_dir(tmp_path, monkeypatch) -> Path:
+    """Фото из тестов сохраняются во временную папку, а не в backend/media."""
+    monkeypatch.setattr(settings, "media_dir", tmp_path)
+    return tmp_path
+
+
+# Минимальные «картинки»: формат определяется по первым байтам
+PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
+JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 32
+
+
+def player_form(**overrides) -> dict:
+    form = {"last_name": "Иванов", "first_name": "Пётр", "birth_date": "2003-05-14", "pd_consent": "true"}
+    form.update(overrides)
+    return {k: v for k, v in form.items() if v is not None}
+
+
+@pytest.fixture
+def make_team(client):
+    async def factory(headers: dict, name: str = "Уралмаш") -> dict:
+        response = await client.post("/api/teams", json={"name": name}, headers=headers)
+        assert response.status_code == 201, response.text
+        return response.json()
+
+    return factory
+
+
+@pytest.fixture
+def make_player(client):
+    async def factory(headers: dict, **form) -> dict:
+        response = await client.post(
+            "/api/players",
+            data=player_form(**form),
+            files={"photo": ("p.png", PNG, "image/png")},
+            headers=headers,
+        )
+        assert response.status_code == 201, response.text
+        return response.json()
+
+    return factory
