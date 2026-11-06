@@ -1,0 +1,29 @@
+.playersHeroSection {
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    font-size: 48px;
+    font-weight: $fw-semi-bold;
+    color: #000;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 19px;
+}
+
+.subtitle {
+    font-size: 18px;
+    font-weight: $fw-regular;
+    color: $bright-grey-color;
+    margin-bottom: 27px;
+}
+
+.filter {
+    display: flex;
+    gap: 43px;
+}
+
+.search {
+    max-width: 587px;
+}

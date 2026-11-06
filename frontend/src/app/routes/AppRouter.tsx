@@ -5,12 +5,14 @@ import {
     MAIN_ROUTE, 
     MATCHES_ROUTE, 
     TOURNAMENTS_ROUTE,
-    TEAMS_ROUTE
+    TEAMS_ROUTE,
+    PLAYERS_ROUTE
 } from "@shared/const/router-path";
 import MainPage from "@pages/MainPage/MainPage";
 import TournamentsPage from "@pages/TournamentsPage/TournamentsPage"
 import MatchesPage from "@pages/MatchesPage/MatchesPage";
 import TeamsPage from "@pages/TeamsPage/TeamsPage"
+import PlayersPage from "@pages/PlayersPage/PlayersPage"
 import MatchesByDates from "@widgets/matchesByDates"
 import MatchesByTournaments from "@widgets/matchesByTournaments"
 
@@ -34,6 +36,7 @@ const AppRouter = () => {
                     <Route path={MATCHES_ROUTE.children.BY_TOURNAMENTS} element={<MatchesByTournaments />}/>
                 </Route>
                 <Route path={TEAMS_ROUTE} element={<TeamsPage />}/>
+                <Route path={PLAYERS_ROUTE} element={<PlayersPage />}/>
 
 
                 {/* <Route path="*" element={<Navigate to={ MAIN_ROUTE } />}/> */}

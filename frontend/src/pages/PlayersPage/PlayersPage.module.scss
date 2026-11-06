@@ -1,0 +1,12 @@
+.playersPage {
+    margin-top: 105px;
+    display: flex;
+    flex-direction: column;
+    gap: 67px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+}
