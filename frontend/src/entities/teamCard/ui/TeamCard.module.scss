@@ -80,6 +80,7 @@
 
 .arrow {
     margin-left: auto;
+    cursor: pointer;
 
     & path {
         stroke: $fc-primary;

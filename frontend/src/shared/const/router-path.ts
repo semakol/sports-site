@@ -8,4 +8,11 @@ export const MATCHES_ROUTE = {
     }
 }
 export const TEAMS_ROUTE = "/teams";
+export const TEAM_ROUTE = {
+    path: "/team",
+    children: {
+        STRUCTURE: "structure",
+        TEAM_MATCHES: "team-matches"
+    }
+};
 export const PLAYERS_ROUTE = "/players";

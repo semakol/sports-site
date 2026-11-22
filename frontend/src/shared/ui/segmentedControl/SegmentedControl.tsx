@@ -10,6 +10,7 @@ const SegmentedControl: FC<SegmentedControlProps> = ({className, routes}) => {
                 <NavLink 
                     key={route.path}
                     to={route.path}
+                    end
                     className={({isActive}) => `${styles.buttonControl} ${className || ''} ${isActive && styles.active}`}
                 >
                     <span className={styles.text}>{route.label}</span>
