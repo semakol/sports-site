@@ -1,6 +1,10 @@
 import styles from './TeamCard.module.scss'
 import type { FC } from 'react';
 import type { TeamCardProps } from '../model/type';
+import { useNavigate } from 'react-router-dom';
+import {
+    TEAM_ROUTE
+} from "@shared/const/router-path";
 
 import ArrowRightCircle from "@shared/assets/icons/arrowRightCircle.svg?react";
 import UsersIcon from "@shared/assets/icons/users.svg?react";
@@ -8,11 +12,17 @@ import TrophyIcon from "@shared/assets/icons/trophy.svg?react";
 import TeamImage from "@shared/assets/images/team.png"
 
 const TeamCard: FC<TeamCardProps> = ({
+    id,
     logo,
     name,
     teamsCount,
     tournamentsCount
 }) => {
+    const navigate = useNavigate();
+    const handleClick = (id: number) => {
+        navigate(`${TEAM_ROUTE.path}/${id}`);
+    }
+
   return (
     <div className={`${styles.teamCard}`}>
         <div className={`${styles.cardCover}`}> 
@@ -43,7 +53,7 @@ const TeamCard: FC<TeamCardProps> = ({
                 <TrophyIcon className={styles.icon} />
                 <span className={styles.tournamentsCount}>{tournamentsCount} турнира</span>
             </div>
-            <ArrowRightCircle className={styles.arrow} />
+            <ArrowRightCircle className={styles.arrow} onClick={() => handleClick(id)} />
         </div>
     </div>
   )

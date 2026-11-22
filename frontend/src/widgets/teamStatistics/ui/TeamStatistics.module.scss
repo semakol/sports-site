@@ -1,0 +1,180 @@
+.teamStatistics {
+    display: flex;
+    gap: 41px;
+}
+
+.leftColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 19px;
+    max-width: 1017px;
+    width: 100%;
+}
+
+.about {
+    background-color: #fff;
+    box-shadow: 0px 0px 4px 0px #00000040;
+    border-radius: 15px;
+    padding: 27px 48px 38px 48px;
+}
+
+.title {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 29px;
+
+    & span {
+        font-weight: $fw-bold;
+        font-size: 19px;
+        color: $fc-primary;
+    }
+}
+
+.icon {
+    width: 23px;
+    height: 23px;
+
+    & path {
+        stroke: $fc-primary;
+    }
+}
+
+.text {
+    font-weight: $fw-regular;
+    font-size: 16px;
+    color: #000;
+    margin: 0;
+}
+
+.generalResults {
+    display: flex;
+    gap: 105px;
+}
+
+.resultsElements {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+}
+
+.label {
+    font-weight: $fw-regular;
+    font-size: 16px;
+    color: #000;
+}
+
+.value {
+    font-weight: $fw-regular;
+    font-size: 50px;
+    color: $link-color;
+}
+
+.recentResults {
+    display: flex;
+    justify-content: space-between;
+}
+
+.resultsItem {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    text-align: center;
+}
+
+.logo {
+    width: 70px;
+    height: 70px;
+}
+
+.score {
+    font-weight: $fw-semi-bold;
+    font-size: 25px;
+    color: #000;
+}
+
+.devider {
+    align-self: stretch;
+    width: 1px;
+    background-color: #D9D9D9;
+}
+
+.matchInfo {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+}
+
+.time {
+    font-weight: $fw-regular;
+    font-size: 16px;
+    color: #585980;
+}
+
+.rightColumn {
+    max-width: 521px;
+    width: 100%;
+    height: fit-content;
+    background-color: #fff;
+    box-shadow: 0px 0px 4px 0px #00000040;
+    border-radius: 15px;
+    padding: 27px 48px 38px 48px;
+}
+
+.playersList {
+    display: flex;
+    flex-direction: column;
+    gap: 41px;
+}
+
+.playerItem {
+    display: flex;
+    align-items: center;
+}
+
+.details {
+    margin-left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.stat {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #D9D9D9;
+}
+
+.name {
+    margin: 0;
+    color: $fc-primary;
+    font-weight: $fw-medium;
+    font-size: 16px;
+}
+
+.meta {
+    color: #585980;
+    font-weight: $fw-regular;
+    font-size: 16px;
+}
+
+.statNumber {
+    color: $fc-primary;
+    font-weight: $fw-medium;
+    font-size: 40px;
+}
+
+.statLabel {
+    color: #585980;
+    font-weight: $fw-regular;
+    font-size: 16px;
+}

@@ -3,10 +3,13 @@ import MatchesHeroImage from "@shared/assets/images/matchesHeroImage.png";
 import Search from "@features/index";
 import SegmentedControl from "@shared/ui/segmentedControl";
 import CustomSelect from "@shared/ui/customSelect";
+import { 
+    MATCHES_ROUTE
+} from "@shared/const/router-path";
 
 const routes = [
-    { path: '/matches/by-dates', label: 'По датам' },
-    { path: '/matches/by-tournaments', label: 'По турнирам' }
+    { path: `${MATCHES_ROUTE.path}/${MATCHES_ROUTE.children.BY_DATES}`, label: 'По датам' },
+    { path: `${MATCHES_ROUTE.path}/${MATCHES_ROUTE.children.BY_TOURNAMENTS}`, label: 'По турнирам' }
 ];
 
 const MatchesHeroSection = () => {

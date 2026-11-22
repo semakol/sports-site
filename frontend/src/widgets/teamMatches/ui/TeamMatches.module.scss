@@ -1,0 +1,108 @@
+.teamMatches {
+    background-color: #fff;
+    box-shadow: 0px 0px 4px 0px #00000040;
+    border-radius: 15px;
+    padding: 27px 48px 38px 48px;
+}
+
+.title {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 29px;
+
+    & span {
+        font-weight: $fw-bold;
+        font-size: 19px;
+        color: $fc-primary;
+    }
+}
+
+.monthGroup {
+    &:first-child {
+        .monthTitle {
+            border-top: 1px solid #D9D9D9;
+        }
+    }
+}
+
+.monthTitle {
+    font-size: 18px;
+    font-weight: $fw-medium;
+    color: $link-color;
+    width: 100%;
+    border-bottom: 1px solid #D9D9D9;
+    padding: 14px 7px;
+    margin: 0;
+}
+
+.matchRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #D9D9D9;
+    padding: 28px 7px;
+    width: 100%;
+}
+
+.logo {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.matchInfo {
+    display: flex;
+    gap: 110px;
+    align-items: center;
+}
+
+.teamHome, .teamAway {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.teamName {
+    font-size: 17px;
+    font-weight: $fw-medium;
+    color: #000;
+}
+
+.score {
+    font-size: 19px;
+    font-weight: $fw-semi-bold;
+    color: #000;
+}
+
+.dateTime {
+    display: flex;
+    gap: 42px;
+}
+
+.date, .time, .tournament, .status {
+    font-size: 16px;
+    font-weight: $fw-regular;
+    color: #000;
+}
+
+.status {
+    padding: 6px 0;
+    border-radius: 5px;
+    max-width: 141px;
+    width: 100%;
+    text-align: center;
+}
+
+.win {
+    background-color: #5ADE57;
+}
+
+.draw {
+    background-color: #B4B4B4;
+}
+
+.loss {
+    background-color: #E54141;
+}
