@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Sports Site API
-  version: 0.2.0
+  version: 0.4.0
   description: |
     API платформы любительских футбольных турниров.
 
@@ -9,6 +9,8 @@ info:
     - Роли: `admin`, `organizer`, `team_rep`, `curator`. Просмотр — без авторизации.
     - Ошибки: `{ code, message, field }`; 400 — данные, 401 — нет токена, 403 — нет прав, 404 — не найдено, 409 — конфликт.
     - Списки: `limit` / `offset`, ответ `{ items, total }`.
+    - Черновики и их матчи доступны по ID только организатору-владельцу с токеном; остальным — 404.
+    - Публичные списки показывают только опубликованные и завершённые турниры и их матчи.
 
 servers:
   - url: http://localhost:8000/api
@@ -450,6 +452,9 @@ paths:
       description: |
         `round_robin` — матчи в группах, `playoff` — сетка по посеву, `mixed` — группы, а сетка
         плей-офф создаётся с пустыми слотами и заполняется после группового этапа.
+        Сетка — на 2, 4, 8… мест; в `playoff` лишние места дают лучшим посеянным пропуск первого раунда.
+        В `mixed` A1 играет с B2, B1 — с A2. 409: `SCHEDULE_GENERATED`, `NOT_ENOUGH_TEAMS`,
+        `TEAMS_WITHOUT_GROUP`, `GROUP_TOO_SMALL`, `GROUPS_REQUIRED`, `ADVANCE_PER_GROUP_REQUIRED`, `INVALID_BRACKET_SIZE`.
       requestBody:
         required: true
         content:
@@ -468,9 +473,25 @@ paths:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/Match' } }
         '409': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [tournaments]
+      summary: Удалить расписание черновика (чтобы поменять группы и участников)
+      responses:
+        '204': { description: Удалено }
+        '409': { $ref: '#/components/responses/Error' }
 
   /tournaments/{tournamentId}/matches:
     parameters: [{ $ref: '#/components/parameters/TournamentId' }]
+    get:
+      tags: [tournaments]
+      summary: Все матчи турнира
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Match' } }
     post:
       tags: [tournaments]
       summary: Добавить матч вручную
@@ -487,6 +508,7 @@ paths:
     get:
       tags: [tournaments]
       summary: Турнирные таблицы (по группам)
+      description: Только завершённые матчи группового этапа. Места по очкам, разнице мячей, забитым, ID команды.
       security: []
       responses:
         '200':
@@ -513,6 +535,7 @@ paths:
     get:
       tags: [tournaments]
       summary: Бомбардиры и карточки
+      description: Активные и завершённые матчи. Отменённые события и автоголы не входят в голы. matches — число заявок игрока.
       security: []
       parameters:
         - { name: sort, in: query, schema: { type: string, enum: [goals, yellow_cards, red_cards], default: goals } }
@@ -529,6 +552,7 @@ paths:
     get:
       tags: [matches]
       summary: Лента матчей
+      description: Даты включительно, в UTC. curator=me требует роль curator. Порядок по дате и ID.
       security: [{}, { bearerAuth: [] }]
       parameters:
         - { name: tournament_id, in: query, schema: { type: integer } }
@@ -664,7 +688,9 @@ paths:
     post:
       tags: [protocol]
       summary: Завершить матч и закрыть протокол
-      description: Для ничьей в плей-офф нужно передать счёт серии пенальти.
+      description: |
+        Для ничьей в плей-офф нужно передать счёт серии пенальти (иначе 409 `PENALTIES_REQUIRED`).
+        Победитель плей-офф переходит в следующий матч сетки; после групп заполняется плей-офф (`mixed`).
       requestBody:
         content:
           application/json:
@@ -692,7 +718,11 @@ paths:
     post:
       tags: [protocol]
       summary: Внести событие
-      description: Минуту и команду определяет сервер. Повтор с тем же `client_event_id` вернёт 200 без дубля.
+      description: |
+        Минуту и команду определяет сервер. Повтор с тем же `client_event_id` вернёт 200 без дубля.
+        Замена: `player_id` должен быть на поле, `player_in_id` — заявлен за ту же команду и не на поле;
+        возвратные замены разрешены, удалённый игрок вернуться не может.
+        409: `MATCH_NOT_LIVE`, `NO_ACTIVE_PERIOD`, `PLAYER_NOT_ON_FIELD`, `PLAYER_ALREADY_ON_FIELD`, `PLAYER_SENT_OFF`.
       requestBody:
         required: true
         content:
@@ -711,6 +741,7 @@ paths:
     delete:
       tags: [protocol]
       summary: Отменить событие (до закрытия протокола)
+      description: 409 `EVENT_HAS_DEPENDENTS`, если от события зависят более поздние (гол вышедшего на замену).
       responses:
         '200':
           description: Актуальный счёт
